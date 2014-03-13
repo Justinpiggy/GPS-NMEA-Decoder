@@ -49,7 +49,7 @@ struct GPGSV
 {
   int GSV_count;
   int GSV_id;
-  int SAT_count[4];
+  int SAT_count;
   int SAT_id[4];
   int SAT_elevation[4];
   int SAT_azimuth[4];
@@ -81,9 +81,8 @@ struct GPRMC
 
 struct GPVTG
 {
-  char GPS_status;
-  double NRH_real;
-  char NRH_meg;
+  int NRH_real;
+  int NRH_meg;
   double GND_speed_knot;
   double GND_speed_kmh;
   char GPS_mode;
@@ -157,48 +156,132 @@ void loop() {
     }
     SerialUSB.println(Serial_length);
     SerialUSB.println("Decoding");
-    NMEA_Decode(Serial_code, Serial_length);
-    SerialUSB.println("GGA Data:");
-    SerialUSB.println(now.GGA.UTC_hh);
-    SerialUSB.println(now.GGA.UTC_mm);
-    SerialUSB.println(now.GGA.UTC_ss);
-    SerialUSB.println(now.GGA.UTC_ms);
-    SerialUSB.println(now.GGA.Latitude.dd);
-    SerialUSB.println(now.GGA.Latitude.mm_int);
-    SerialUSB.println(now.GGA.Latitude.mm_decimal);
-    SerialUSB.println(now.GGA.Latitude.mm_data);
-    SerialUSB.println(now.GGA.Latitude.hs);
-    SerialUSB.println(now.GGA.Longitude.dd);
-    SerialUSB.println(now.GGA.Longitude.mm_int);
-    SerialUSB.println(now.GGA.Longitude.mm_decimal);
-    SerialUSB.println(now.GGA.Longitude.mm_data);
-    SerialUSB.println(now.GGA.Longitude.hs);
-    SerialUSB.println(now.GGA.GPS_status);
-    SerialUSB.println(now.GGA.GPS_count);
-    SerialUSB.println(now.GGA.HDOP);
-    SerialUSB.println(now.GGA.Elevation);
-    SerialUSB.println(now.GGA.Geo_Elevation);
-    SerialUSB.println(now.GGA.DEF_ss);
-    SerialUSB.println(now.GGA.DEF_id);
-    SerialUSB.println(now.GGA.Rcv_Checksum);
-    SerialUSB.println(now.GGA.Cal_Checksum);
-
-
-    SerialUSB.println("GSA Data:");
-    SerialUSB.println(now.GSA.SAT_mode);
-    SerialUSB.println(now.GSA.SAT_count);
-    for (int i = 0; i < 12; i++)
+    long time = micros();
+    int code_type = NMEA_Decode(Serial_code, Serial_length);
+    SerialUSB.println(micros() - time);
+    switch (code_type)
     {
-      SerialUSB.print(now.GSA.SAT_id[i]);
-      SerialUSB.print(",");
-    }
-    SerialUSB.println();
-    SerialUSB.println(now.GSA.PDOP);
-    SerialUSB.println(now.GSA.HDOP);
-    SerialUSB.println(now.GSA.VDOP);
-    SerialUSB.println(now.GSA.Rcv_Checksum);
-    SerialUSB.println(now.GSA.Cal_Checksum);
+      case 1:
+        {
+          SerialUSB.println("GGA Data:");
+          SerialUSB.println(now.GGA.UTC_hh);
+          SerialUSB.println(now.GGA.UTC_mm);
+          SerialUSB.println(now.GGA.UTC_ss);
+          SerialUSB.println(now.GGA.UTC_ms);
+          SerialUSB.println(now.GGA.Latitude.dd);
+          SerialUSB.println(now.GGA.Latitude.mm_int);
+          SerialUSB.println(now.GGA.Latitude.mm_decimal);
+          SerialUSB.println(now.GGA.Latitude.mm_data);
+          SerialUSB.println(now.GGA.Latitude.hs);
+          SerialUSB.println(now.GGA.Longitude.dd);
+          SerialUSB.println(now.GGA.Longitude.mm_int);
+          SerialUSB.println(now.GGA.Longitude.mm_decimal);
+          SerialUSB.println(now.GGA.Longitude.mm_data);
+          SerialUSB.println(now.GGA.Longitude.hs);
+          SerialUSB.println(now.GGA.GPS_status);
+          SerialUSB.println(now.GGA.GPS_count);
+          SerialUSB.println(now.GGA.HDOP);
+          SerialUSB.println(now.GGA.Elevation);
+          SerialUSB.println(now.GGA.Geo_Elevation);
+          SerialUSB.println(now.GGA.DEF_ss);
+          SerialUSB.println(now.GGA.DEF_id);
+          SerialUSB.println(now.GGA.Rcv_Checksum);
+          SerialUSB.println(now.GGA.Cal_Checksum);
+        }
+        break;
+      case 2:
+        {
+          SerialUSB.println("GSA Data:");
+          SerialUSB.println(now.GSA.SAT_mode);
+          SerialUSB.println(now.GSA.SAT_count);
+          for (int i = 0; i < 12; i++)
+          {
+            SerialUSB.print(now.GSA.SAT_id[i]);
+            SerialUSB.print(",");
+          }
+          SerialUSB.println();
+          SerialUSB.println(now.GSA.PDOP);
+          SerialUSB.println(now.GSA.HDOP);
+          SerialUSB.println(now.GSA.VDOP);
+          SerialUSB.println(now.GSA.Rcv_Checksum);
+          SerialUSB.println(now.GSA.Cal_Checksum);
+        }
+        break;
 
+
+      case 3:
+        {
+          SerialUSB.println("GSV Data:");
+          SerialUSB.println(now.GSV_count);
+          for (int i = 0; i < 3; i++)
+          {
+            SerialUSB.print("GSV Data set ");
+            SerialUSB.println(i);
+            SerialUSB.println(now.GSV[i].GSV_count);
+            SerialUSB.println(now.GSV[i].GSV_id);
+            SerialUSB.println(now.GSV[i].SAT_count);
+            for (int j = 0; j < 4; j++)
+            {
+              SerialUSB.println(now.GSV[i].SAT_id[j]);
+              SerialUSB.println(now.GSV[i].SAT_elevation[j]);
+              SerialUSB.println(now.GSV[i].SAT_azimuth[j]);
+              SerialUSB.println(now.GSV[i].SAT_SNR[j]);
+            }
+            SerialUSB.println(now.GSV[i].Rcv_Checksum);
+            SerialUSB.println(now.GSV[i].Cal_Checksum);
+
+          }
+
+        }
+        break;
+
+
+      case 4:
+        {
+          SerialUSB.println("RMC Data:");
+          SerialUSB.println(now.RMC.UTC_hh);
+          SerialUSB.println(now.RMC.UTC_mm);
+          SerialUSB.println(now.RMC.UTC_ss);
+          SerialUSB.println(now.RMC.UTC_ms);
+          SerialUSB.println(now.RMC.Latitude.dd);
+          SerialUSB.println(now.RMC.Latitude.mm_int);
+          SerialUSB.println(now.RMC.Latitude.mm_decimal);
+          SerialUSB.println(now.RMC.Latitude.mm_data);
+          SerialUSB.println(now.RMC.Latitude.hs);
+          SerialUSB.println(now.RMC.Longitude.dd);
+          SerialUSB.println(now.RMC.Longitude.mm_int);
+          SerialUSB.println(now.RMC.Longitude.mm_decimal);
+          SerialUSB.println(now.RMC.Longitude.mm_data);
+          SerialUSB.println(now.RMC.Longitude.hs);
+          SerialUSB.println(now.RMC.GND_speed);
+          SerialUSB.println(now.RMC.GND_heading);
+          SerialUSB.println(now.RMC.UTC_D_dd);
+          SerialUSB.println(now.RMC.UTC_D_mm);
+          SerialUSB.println(now.RMC.UTC_D_yy);
+          SerialUSB.println(now.RMC.MEG_deg);
+          SerialUSB.println(now.RMC.MEG_dir);
+          SerialUSB.println(now.RMC.GPS_mode);
+          SerialUSB.println(now.RMC.Rcv_Checksum);
+          SerialUSB.println(now.RMC.Cal_Checksum);
+        }
+        break;
+
+      case 5:
+        {
+          SerialUSB.println("VTG Data:");
+          SerialUSB.println(now.VTG.NRH_real);
+          SerialUSB.println(now.VTG.NRH_meg);
+          SerialUSB.println(now.VTG.GND_speed_knot);
+          SerialUSB.println(now.VTG.GND_speed_kmh);
+          SerialUSB.println(now.VTG.GPS_mode);
+          SerialUSB.println(now.VTG.Rcv_Checksum);
+          SerialUSB.println(now.VTG.Cal_Checksum);
+        }
+        break;
+
+
+
+    }
     SerialUSB.println("Done");
   }
 }
@@ -208,7 +291,6 @@ void loop() {
 
 int NMEA_Decode(char code[], int code_length)
 {
-  long time = micros();
   char temp[100];
   int ptemp;
   char t[10];
@@ -309,6 +391,7 @@ int NMEA_Decode(char code[], int code_length)
     {
       now.GGA.Cal_Checksum ^= code[counter];
     }
+    return 1;
   }
 
 
@@ -320,6 +403,7 @@ int NMEA_Decode(char code[], int code_length)
 
     now.GSA.SAT_count = code[i] - '0';
     i = i + 2;
+
     int comma = 0;
     do {
       if (code[i] != ',')
@@ -332,7 +416,6 @@ int NMEA_Decode(char code[], int code_length)
     }
     while (comma < 12);
 
-    SerialUSB.println(i);
     ptemp = 0;
     while (code[i] != ',')
     {
@@ -372,9 +455,226 @@ int NMEA_Decode(char code[], int code_length)
     {
       now.GSA.Cal_Checksum ^= code[counter];
     }
+    return 2;
   }
 
-  SerialUSB.println(micros() - time);
+
+
+
+
+  if (check_str(code, "GPGSV", 0, 0, 5))
+  {
+    i = 6;
+
+    now.GSV_count = code[i] - '0';
+    i = i + 2;
+
+    int GSV_id = code[i] - '0' - 1;
+    now.GSV[GSV_id].GSV_count = now.GSV_count;
+    now.GSV[GSV_id].GSV_id = GSV_id + 1;
+    i = i + 2;
+
+    now.GSV[GSV_id].SAT_count = (code[i] - '0') * 10 + (code[i + 1] - '0');
+    i = i + 3;
+
+    int sat_counter = 0;
+    do {
+      if (code[i] != ',')
+      {
+        now.GSV[GSV_id].SAT_id[sat_counter] = (code[i] - '0') * 10 + (code[i + 1] - '0');
+        i = i + 2;
+      }
+      i++;
+      if (code[i] != ',')
+      {
+        now.GSV[GSV_id].SAT_elevation[sat_counter] = (code[i] - '0') * 10 + (code[i + 1] - '0');
+        i = i + 2;
+      }
+      i++;
+      if (code[i] != ',')
+      {
+        now.GSV[GSV_id].SAT_azimuth[sat_counter] = (code[i] - '0') * 100 + (code[i + 1] - '0') * 10 + (code[i + 2] - '0');
+        i = i + 3;
+      }
+      i++;
+      if ((code[i] != ',') && (code[i] != '*'))
+      {
+        now.GSV[GSV_id].SAT_SNR[sat_counter] = (code[i] - '0') * 10 + (code[i + 1] - '0');
+        i = i + 2;
+      }
+      i++;
+      sat_counter++;
+    }
+    while (sat_counter < 4);
+    now.GSV[GSV_id].Rcv_Checksum = (((code[i] >= 'A') && (code[i] <= 'F')) ? (code[i] - 'A' + 10) : (code[i] - '0')) * 16 + (((code[i + 1] >= 'A') && (code[i + 1] <= 'F')) ? (code[i + 1] - 'A' + 10) : (code[i + 1] - '0'));
+    now.GSV[GSV_id].Cal_Checksum = 0;
+    for (int counter = 0; counter < i - 1; counter++)
+    {
+      now.GSV[GSV_id].Cal_Checksum ^= code[counter];
+    }
+    return 3;
+  }
+
+
+
+  if (check_str(code, "GPRMC", 0, 0, 5))
+  {
+    i = 6;
+
+    now.RMC.UTC_hh = (code[i] - '0') * 10 + (code[i + 1] - '0');
+    now.RMC.UTC_mm = (code[i + 2] - '0') * 10 + (code[i + 3] - '0');
+    now.RMC.UTC_ss = (code[i + 4] - '0') * 10 + (code[i + 5] - '0');
+    now.RMC.UTC_ms = (code[i + 7] - '0') * 10 + (code[i + 8] - '0');
+    i = i + 10;
+
+    now.RMC.GPS_status = code[i];
+    i = i + 2;
+
+    now.RMC.Latitude.dd = (code[i] - '0') * 10 + (code[i + 1] - '0');
+    now.RMC.Latitude.mm_int = (code[i + 2] - '0') * 10 + (code[i + 3] - '0');
+    now.RMC.Latitude.mm_decimal = (code[i + 5] - '0') * 10000 + (code[i + 6] - '0') * 1000 + (code[i + 7] - '0') * 100 + (code[i + 8] - '0') * 10 + (code[i + 9] - '0');
+    now.RMC.Latitude.mm_data = now.RMC.Latitude.mm_decimal;
+    now.RMC.Latitude.mm_data /= 100000;
+    now.RMC.Latitude.mm_data += now.RMC.Latitude.mm_int;
+    now.RMC.Latitude.data = now.RMC.Latitude.dd + now.RMC.Latitude.mm_data / 60;
+    now.RMC.Latitude.hs = code[i + 11];
+    i = i + 13;
+
+    now.RMC.Longitude.dd = (code[i] - '0') * 100 + (code[i + 1] - '0') * 10 + (code[i + 2] - '0');
+    now.RMC.Longitude.mm_int = (code[i + 3] - '0') * 10 + (code[i + 4] - '0');
+    now.RMC.Longitude.mm_decimal = (code[i + 6] - '0') * 10000 + (code[i + 7] - '0') * 1000 + (code[i + 8] - '0') * 100 + (code[i + 9] - '0') * 10 + (code[i + 10] - '0');
+    now.RMC.Longitude.mm_data = now.RMC.Longitude.mm_decimal;
+    now.RMC.Longitude.mm_data /= 100000;
+    now.RMC.Longitude.mm_data += now.RMC.Longitude.mm_int;
+    now.RMC.Longitude.data = now.RMC.Longitude.dd + now.RMC.Longitude.mm_data / 60;
+    now.RMC.Longitude.hs = code[i + 12];
+    i = i + 14;
+
+    ptemp = 0;
+    while (code[i] != ',')
+    {
+      temp[ptemp] = code[i];
+      i++;
+      ptemp++;
+    }
+    i++;
+    temp[ptemp] = 0;
+    now.RMC.GND_speed = atof(temp);
+
+    ptemp = 0;
+    while (code[i] != ',')
+    {
+      temp[ptemp] = code[i];
+      i++;
+      ptemp++;
+    }
+    i++;
+    temp[ptemp] = 0;
+    now.RMC.GND_heading = atof(temp);
+
+    now.RMC.UTC_D_dd = (code[i] - '0') * 10 + (code[i + 1] - '0');
+    now.RMC.UTC_D_mm = (code[i + 2] - '0') * 10 + (code[i + 3] - '0');
+    now.RMC.UTC_D_yy = (code[i + 4] - '0') * 10 + (code[i + 5] - '0');
+    i = i + 7;
+
+    ptemp = 0;
+    while (code[i] != ',')
+    {
+      temp[ptemp] = code[i];
+      i++;
+      ptemp++;
+    }
+    i++;
+    temp[ptemp] = 0;
+    now.RMC.MEG_deg = atof(temp);
+
+    if (code[i] != ',')
+    {
+      now.RMC.MEG_dir = code[i];
+      i++;
+    }
+    i++;
+
+    now.RMC.GPS_mode = code[i];
+    i = i + 2;
+
+    now.RMC.Rcv_Checksum = (((code[i] >= 'A') && (code[i] <= 'F')) ? (code[i] - 'A' + 10) : (code[i] - '0')) * 16 + (((code[i + 1] >= 'A') && (code[i + 1] <= 'F')) ? (code[i + 1] - 'A' + 10) : (code[i + 1] - '0'));
+    now.RMC.Cal_Checksum = 0;
+    for (int counter = 0; counter < i - 1; counter++)
+    {
+      now.RMC.Cal_Checksum ^= code[counter];
+    }
+    return 4;
+  }
+
+
+  if (check_str(code, "GPVTG", 0, 0, 5))
+  {
+    i = 6;
+
+    ptemp = 0;
+    while (code[i] != ',')
+    {
+      temp[ptemp] = code[i];
+      i++;
+      ptemp++;
+    }
+    i = i + 3;
+    temp[ptemp] = 0;
+    now.VTG.NRH_real = atoi(temp);
+    
+    ptemp = 0;
+    while (code[i] != ',')
+    {
+      temp[ptemp] = code[i];
+      i++;
+      ptemp++;
+    }
+    i = i + 3;
+    temp[ptemp] = 0;
+    now.VTG.NRH_meg = atoi(temp);
+
+    ptemp = 0;
+    while (code[i] != ',')
+    {
+      temp[ptemp] = code[i];
+      i++;
+      ptemp++;
+    }
+    i = i + 3;
+    temp[ptemp] = 0;
+    now.VTG.GND_speed_knot = atof(temp);
+
+    ptemp = 0;
+    while (code[i] != ',')
+    {
+      temp[ptemp] = code[i];
+      i++;
+      ptemp++;
+    }
+    i = i + 3;
+    temp[ptemp] = 0;
+    now.VTG.GND_speed_kmh = atof(temp);
+
+    now.VTG.GPS_mode = code[i];
+    i = i + 2;
+
+    now.VTG.Rcv_Checksum = (((code[i] >= 'A') && (code[i] <= 'F')) ? (code[i] - 'A' + 10) : (code[i] - '0')) * 16 + (((code[i + 1] >= 'A') && (code[i + 1] <= 'F')) ? (code[i + 1] - 'A' + 10) : (code[i + 1] - '0'));
+    now.VTG.Cal_Checksum = 0;
+    for (int counter = 0; counter < i - 1; counter++)
+    {
+      now.VTG.Cal_Checksum ^= code[counter];
+    }
+    return 5;
+  }
+
+
+
+
+
+
+
+
   return 0;
 }
 
