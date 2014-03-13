@@ -1,5 +1,5 @@
 
-
+int ShowData(int code_type);
 int NMEA_Decode(char code[], int length);
 boolean check_str(char str_a[], char str_b[], int a_start, int b_start, int str_length);
 
@@ -160,7 +160,17 @@ void loop() {
     long time = micros();
     int code_type = NMEA_Decode(Serial_code, Serial_length);
     SerialUSB.println(micros() - time);
-    switch (code_type)
+    
+    ShowData(code_type);
+
+    SerialUSB.println("Done");
+  }
+}
+
+
+int ShowData(int code_type)
+{
+  switch (code_type)
     {
       case 1:
         {
@@ -321,14 +331,9 @@ void loop() {
           SerialUSB.println(now.ZDA.Cal_Checksum);
         }
         break;
-
-
-
     }
-    SerialUSB.println("Done");
-  }
+    return 0;
 }
-
 
 
 
@@ -501,10 +506,6 @@ int NMEA_Decode(char code[], int code_length)
     return 2;
   }
 
-
-
-
-
   if (check_str(code, "GPGSV", 0, 0, 5))
   {
     i = 6;
@@ -557,8 +558,6 @@ int NMEA_Decode(char code[], int code_length)
     }
     return 3;
   }
-
-
 
   if (check_str(code, "GPRMC", 0, 0, 5))
   {
@@ -789,15 +788,6 @@ int NMEA_Decode(char code[], int code_length)
     }
     return 7;
   }
-
-
-
-
-
-
-
-
-
 
   return 0;
 }
