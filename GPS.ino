@@ -5,8 +5,8 @@ boolean check_str(char str_a[], char str_b[], int a_start, int b_start, int str_
 
 struct LL
 {
-  int dd;
-  int mm_int;
+  byte dd;
+  byte mm_int;
   long mm_decimal;
   double mm_data;
   double data;
@@ -15,18 +15,18 @@ struct LL
 
 struct GPGGA
 {
-  int UTC_hh;
-  int UTC_mm;
-  int UTC_ss;
-  int UTC_ms;
+  byte UTC_hh;
+  byte UTC_mm;
+  byte UTC_ss;
+  byte UTC_ms;
   LL Latitude;
   LL Longitude;
-  int GPS_status;
-  int GPS_count;
+  byte GPS_status;
+  byte GPS_count;
   double HDOP;
   double Elevation;
   double Geo_Elevation;
-  int DEF_ss;
+  byte DEF_ss;
   int DEF_id;
   unsigned int Rcv_Checksum;
   unsigned int Cal_Checksum;
@@ -36,8 +36,8 @@ struct GPGGA
 struct GPGSA
 {
   char SAT_mode;
-  int SAT_count;
-  int SAT_id[12];
+  byte SAT_count;
+  byte SAT_id[12];
   double PDOP;
   double HDOP;
   double VDOP;
@@ -47,31 +47,31 @@ struct GPGSA
 
 struct GPGSV
 {
-  int GSV_count;
-  int GSV_id;
-  int SAT_count;
-  int SAT_id[4];
-  int SAT_elevation[4];
+  byte GSV_count;
+  byte GSV_id;
+  byte SAT_count;
+  byte SAT_id[4];
+  byte SAT_elevation[4];
   int SAT_azimuth[4];
-  int SAT_SNR[4];
+  byte SAT_SNR[4];
   unsigned int Rcv_Checksum;
   unsigned int Cal_Checksum;
 };
 
 struct GPRMC
 {
-  int UTC_hh;
-  int UTC_mm;
-  int UTC_ss;
-  int UTC_ms;
+  byte UTC_hh;
+  byte UTC_mm;
+  byte UTC_ss;
+  byte UTC_ms;
   char GPS_status;
   LL Latitude;
   LL Longitude;
   double GND_speed;
   double GND_heading;
-  int UTC_D_dd;
-  int UTC_D_mm;
-  int UTC_D_yy;
+  byte UTC_D_dd;
+  byte UTC_D_mm;
+  byte UTC_D_yy;
   double MEG_deg;
   char MEG_dir;
   char GPS_mode;
@@ -106,15 +106,15 @@ struct GPGLL
 
 struct GPZDA
 {
-  int UTC_hh;
-  int UTC_mm;
-  int UTC_ss;
-  int UTC_ms;
-  int UTC_D_dd;
-  int UTC_D_mm;
+  byte UTC_hh;
+  byte UTC_mm;
+  byte UTC_ss;
+  byte UTC_ms;
+  byte UTC_D_dd;
+  byte UTC_D_mm;
   int UTC_D_yy;
-  int LOC_hh;
-  int LOC_mm;
+  byte LOC_hh;
+  byte LOC_mm;
   unsigned int Rcv_Checksum;
   unsigned int Cal_Checksum;
 };
@@ -135,13 +135,13 @@ GPSData now;
 
 char Serial_code[200];
 int Serial_length;
+
 void setup() {
   SerialUSB.begin(115200);
   while (!SerialUSB)
   {
   }
   SerialUSB.println("GPS Start");
-  // put your setup code here, to run once:
 }
 
 
@@ -149,7 +149,6 @@ void setup() {
 
 
 void loop() {
-  // put your main code here, to run repeatedly:
   if (SerialUSB.available() > 0)
   {
     SerialUSB.println("Response:");
