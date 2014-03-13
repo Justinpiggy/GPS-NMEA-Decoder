@@ -97,6 +97,7 @@ struct GPGLL
   int UTC_hh;
   int UTC_mm;
   int UTC_ss;
+  int UTC_ms;
   char GPS_status;
   char GPS_mode;
   unsigned int Rcv_Checksum;
@@ -108,6 +109,7 @@ struct GPZDA
   int UTC_hh;
   int UTC_mm;
   int UTC_ss;
+  int UTC_ms;
   int UTC_D_dd;
   int UTC_D_mm;
   int UTC_D_yy;
@@ -276,6 +278,48 @@ void loop() {
           SerialUSB.println(now.VTG.GPS_mode);
           SerialUSB.println(now.VTG.Rcv_Checksum);
           SerialUSB.println(now.VTG.Cal_Checksum);
+        }
+        break;
+
+      case 6:
+        {
+          SerialUSB.println("GLL Data:");
+
+          SerialUSB.println(now.GLL.Latitude.dd);
+          SerialUSB.println(now.GLL.Latitude.mm_int);
+          SerialUSB.println(now.GLL.Latitude.mm_decimal);
+          SerialUSB.println(now.GLL.Latitude.mm_data);
+          SerialUSB.println(now.GLL.Latitude.hs);
+          SerialUSB.println(now.GLL.Longitude.dd);
+          SerialUSB.println(now.GLL.Longitude.mm_int);
+          SerialUSB.println(now.GLL.Longitude.mm_decimal);
+          SerialUSB.println(now.GLL.Longitude.mm_data);
+          SerialUSB.println(now.GLL.Longitude.hs);
+          SerialUSB.println(now.GLL.UTC_hh);
+          SerialUSB.println(now.GLL.UTC_mm);
+          SerialUSB.println(now.GLL.UTC_ss);
+          SerialUSB.println(now.GLL.UTC_ms);
+          SerialUSB.println(now.GLL.GPS_status);
+          SerialUSB.println(now.GLL.GPS_mode);
+          SerialUSB.println(now.GLL.Rcv_Checksum);
+          SerialUSB.println(now.GLL.Cal_Checksum);
+        }
+        break;
+
+      case 7:
+        {
+          SerialUSB.println("ZDA Data:");
+          SerialUSB.println(now.ZDA.UTC_hh);
+          SerialUSB.println(now.ZDA.UTC_mm);
+          SerialUSB.println(now.ZDA.UTC_ss);
+          SerialUSB.println(now.ZDA.UTC_ms);
+          SerialUSB.println(now.ZDA.UTC_D_dd);
+          SerialUSB.println(now.ZDA.UTC_D_mm);
+          SerialUSB.println(now.ZDA.UTC_D_yy);
+          SerialUSB.println(now.ZDA.LOC_hh);
+          SerialUSB.println(now.ZDA.LOC_mm);
+          SerialUSB.println(now.ZDA.Rcv_Checksum);
+          SerialUSB.println(now.ZDA.Cal_Checksum);
         }
         break;
 
@@ -622,7 +666,7 @@ int NMEA_Decode(char code[], int code_length)
     i = i + 3;
     temp[ptemp] = 0;
     now.VTG.NRH_real = atoi(temp);
-    
+
     ptemp = 0;
     while (code[i] != ',')
     {
@@ -667,6 +711,87 @@ int NMEA_Decode(char code[], int code_length)
     }
     return 5;
   }
+
+  if (check_str(code, "GPGLL", 0, 0, 5))
+  {
+    i = 6;
+
+    now.GLL.Latitude.dd = (code[i] - '0') * 10 + (code[i + 1] - '0');
+    now.GLL.Latitude.mm_int = (code[i + 2] - '0') * 10 + (code[i + 3] - '0');
+    now.GLL.Latitude.mm_decimal = (code[i + 5] - '0') * 10000 + (code[i + 6] - '0') * 1000 + (code[i + 7] - '0') * 100 + (code[i + 8] - '0') * 10 + (code[i + 9] - '0');
+    now.GLL.Latitude.mm_data = now.GLL.Latitude.mm_decimal;
+    now.GLL.Latitude.mm_data /= 100000;
+    now.GLL.Latitude.mm_data += now.GLL.Latitude.mm_int;
+    now.GLL.Latitude.data = now.GLL.Latitude.dd + now.GLL.Latitude.mm_data / 60;
+    now.GLL.Latitude.hs = code[i + 11];
+    i = i + 13;
+
+    now.GLL.Longitude.dd = (code[i] - '0') * 100 + (code[i + 1] - '0') * 10 + (code[i + 2] - '0');
+    now.GLL.Longitude.mm_int = (code[i + 3] - '0') * 10 + (code[i + 4] - '0');
+    now.GLL.Longitude.mm_decimal = (code[i + 6] - '0') * 10000 + (code[i + 7] - '0') * 1000 + (code[i + 8] - '0') * 100 + (code[i + 9] - '0') * 10 + (code[i + 10] - '0');
+    now.GLL.Longitude.mm_data = now.GLL.Longitude.mm_decimal;
+    now.GLL.Longitude.mm_data /= 100000;
+    now.GLL.Longitude.mm_data += now.GLL.Longitude.mm_int;
+    now.GLL.Longitude.data = now.GLL.Longitude.dd + now.GLL.Longitude.mm_data / 60;
+    now.GLL.Longitude.hs = code[i + 12];
+    i = i + 14;
+
+    now.GLL.UTC_hh = (code[i] - '0') * 10 + (code[i + 1] - '0');
+    now.GLL.UTC_mm = (code[i + 2] - '0') * 10 + (code[i + 3] - '0');
+    now.GLL.UTC_ss = (code[i + 4] - '0') * 10 + (code[i + 5] - '0');
+    now.GLL.UTC_ms = (code[i + 7] - '0') * 10 + (code[i + 8] - '0');
+    i = i + 10;
+
+    now.GLL.GPS_status = code[i];
+    i = i + 2;
+
+    now.GLL.GPS_mode = code[i];
+    i = i + 2;
+
+    now.GLL.Rcv_Checksum = (((code[i] >= 'A') && (code[i] <= 'F')) ? (code[i] - 'A' + 10) : (code[i] - '0')) * 16 + (((code[i + 1] >= 'A') && (code[i + 1] <= 'F')) ? (code[i + 1] - 'A' + 10) : (code[i + 1] - '0'));
+    now.GLL.Cal_Checksum = 0;
+    for (int counter = 0; counter < i - 1; counter++)
+    {
+      now.GLL.Cal_Checksum ^= code[counter];
+    }
+    return 6;
+  }
+
+  if (check_str(code, "GPZDA", 0, 0, 5))
+  {
+    i = 6;
+
+    now.ZDA.UTC_hh = (code[i] - '0') * 10 + (code[i + 1] - '0');
+    now.ZDA.UTC_mm = (code[i + 2] - '0') * 10 + (code[i + 3] - '0');
+    now.ZDA.UTC_ss = (code[i + 4] - '0') * 10 + (code[i + 5] - '0');
+    now.ZDA.UTC_ms = (code[i + 7] - '0') * 10 + (code[i + 8] - '0');
+    i = i + 10;
+
+    now.ZDA.UTC_D_dd = (code[i] - '0') * 10 + (code[i + 1] - '0');
+    i = i + 3;
+
+    now.ZDA.UTC_D_mm = (code[i] - '0') * 10 + (code[i + 1] - '0');
+    i = i + 3;
+
+    now.ZDA.UTC_D_yy = (code[i] - '0') * 1000 + (code[i + 1] - '0') * 100 + (code[i + 2] - '0') * 10 + (code[i + 3] - '0');
+    i = i + 5;
+
+    now.ZDA.LOC_hh = (code[i] - '0') * 10 + (code[i + 1] - '0');
+    i = i + 3;
+
+    now.ZDA.LOC_mm = (code[i] - '0') * 10 + (code[i + 1] - '0');
+    i = i + 3;
+
+    now.ZDA.Rcv_Checksum = (((code[i] >= 'A') && (code[i] <= 'F')) ? (code[i] - 'A' + 10) : (code[i] - '0')) * 16 + (((code[i + 1] >= 'A') && (code[i + 1] <= 'F')) ? (code[i + 1] - 'A' + 10) : (code[i + 1] - '0'));
+    now.ZDA.Cal_Checksum = 0;
+    for (int counter = 0; counter < i - 1; counter++)
+    {
+      now.ZDA.Cal_Checksum ^= code[counter];
+    }
+    return 7;
+  }
+
+
 
 
 
